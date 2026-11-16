@@ -27,7 +27,8 @@ export default defineConfig(() => {
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
+      host: true,
+      port: 5173,
       // Do not modify—file watching is disabled to prevent flickering during agent edits.
       // Object form so server.ts can attach HMR to the Express server (port 5000).
       hmr: process.env.DISABLE_HMR === 'true' ? false : {},
