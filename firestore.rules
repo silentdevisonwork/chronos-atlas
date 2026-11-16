@@ -1,0 +1,143 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidBoundedList(arr, maxLen) {
+      return arr is list && arr.size() <= maxLen && (arr.size() == 0 || (arr[0] is string && arr[0].size() <= 120));
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.keys().hasAll([
+        'uid', 'displayName', 'preferredLanguage', 'preferredTheme', 'onboardingCompleted', 'createdAt', 'updatedAt'
+      ])
+      && data.keys().hasOnly([
+        'uid', 'displayName', 'photoURL', 'preferredLanguage', 'preferredTheme', 'onboardingCompleted', 'createdAt', 'updatedAt'
+      ])
+      && data.uid == userId
+      && isValidId(data.uid)
+      && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 120
+      && (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 512))
+      && data.preferredLanguage is string && data.preferredLanguage.size() >= 2 && data.preferredLanguage.size() <= 10
+      && (data.preferredTheme == 'dark' || data.preferredTheme == 'light')
+      && data.onboardingCompleted is bool
+      && data.createdAt is timestamp
+      && data.updatedAt is timestamp;
+    }
+
+    function isValidPrivateAccount(data, userId) {
+      return data.keys().hasAll(['uid', 'email', 'updatedAt'])
+      && data.keys().hasOnly(['uid', 'email', 'updatedAt'])
+      && data.uid == userId
+      && isValidId(data.uid)
+      && data.email is string && data.email.size() <= 320
+      && data.updatedAt is timestamp;
+    }
+
+    function isValidPreferences(prefs) {
+      return prefs is map
+      && prefs.keys().hasOnly(['language', 'theme', 'graphicsQuality', 'reducedMotion', 'customCursor'])
+      && (!('language' in prefs) || (prefs.language is string && prefs.language.size() <= 10))
+      && (!('theme' in prefs) || (prefs.theme == 'dark' || prefs.theme == 'light'))
+      && (!('graphicsQuality' in prefs) || (prefs.graphicsQuality == 'high' || prefs.graphicsQuality == 'balanced' || prefs.graphicsQuality == 'low'))
+      && (!('reducedMotion' in prefs) || prefs.reducedMotion is bool)
+      && (!('customCursor' in prefs) || prefs.customCursor is bool);
+    }
+
+    function isValidProgressState(data, userId) {
+      return data.keys().hasAll([
+        'uid', 'favoriteCountries', 'favoriteCivilizations', 'favoriteFigures', 'favoritePlanets',
+        'savedPeriods', 'exploredLocations', 'completedLessons', 'achievements', 'recentSearches',
+        'quizScores', 'preferences', 'updatedAt'
+      ])
+      && data.keys().hasOnly([
+        'uid', 'favoriteCountries', 'favoriteCivilizations', 'favoriteFigures', 'favoritePlanets',
+        'savedPeriods', 'exploredLocations', 'completedLessons', 'achievements', 'recentSearches',
+        'quizScores', 'preferences', 'updatedAt'
+      ])
+      && data.uid == userId
+      && isValidId(data.uid)
+      && isValidBoundedList(data.favoriteCountries, 100)
+      && isValidBoundedList(data.favoriteCivilizations, 100)
+      && isValidBoundedList(data.favoriteFigures, 100)
+      && isValidBoundedList(data.favoritePlanets, 40)
+      && isValidBoundedList(data.savedPeriods, 100)
+      && isValidBoundedList(data.exploredLocations, 200)
+      && isValidBoundedList(data.completedLessons, 100)
+      && isValidBoundedList(data.achievements, 50)
+      && isValidBoundedList(data.recentSearches, 30)
+      && data.quizScores is map && data.quizScores.keys().size() <= 50
+      && isValidPreferences(data.preferences)
+      && data.updatedAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow create: if isValidId(userId) && isOwner(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(userId) && isOwner(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'displayName', 'photoURL', 'preferredLanguage', 'preferredTheme', 'onboardingCompleted', 'updatedAt'
+        ]);
+      allow delete: if isValidId(userId) && isOwner(userId);
+
+      match /private/{docId} {
+        allow get: if isValidId(userId) && isValidId(docId) && docId == 'account' && isOwner(userId);
+        allow create: if isValidId(userId) && isValidId(docId) && docId == 'account' && isOwner(userId)
+          && isValidPrivateAccount(incoming(), userId)
+          && incoming().updatedAt == request.time;
+        allow update: if isValidId(userId) && isValidId(docId) && docId == 'account' && isOwner(userId)
+          && isValidPrivateAccount(incoming(), userId)
+          && incoming().uid == existing().uid
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['email', 'updatedAt']);
+        allow delete: if isValidId(userId) && isValidId(docId) && docId == 'account' && isOwner(userId);
+      }
+
+      match /progress/{docId} {
+        allow get: if isValidId(userId) && isValidId(docId) && docId == 'state' && isOwner(userId);
+        allow create: if isValidId(userId) && isValidId(docId) && docId == 'state' && isOwner(userId)
+          && isValidProgressState(incoming(), userId)
+          && incoming().updatedAt == request.time;
+        allow update: if isValidId(userId) && isValidId(docId) && docId == 'state' && isOwner(userId)
+          && isValidProgressState(incoming(), userId)
+          && incoming().uid == existing().uid
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'favoriteCountries', 'favoriteCivilizations', 'favoriteFigures', 'favoritePlanets',
+            'savedPeriods', 'exploredLocations', 'completedLessons', 'achievements', 'recentSearches',
+            'quizScores', 'preferences', 'updatedAt'
+          ]);
+        allow delete: if isValidId(userId) && isValidId(docId) && docId == 'state' && isOwner(userId);
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Chronos Atlas",
+  "description": "Immersive 3D History, Civilization, Interactive Time Machine & Solar System Explorer",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
