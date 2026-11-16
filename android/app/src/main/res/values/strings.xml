@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">Chronos Atlas</string>
-    <string name="title_activity_main">Chronos Atlas</string>
-    <string name="package_name">com.chronos.atlas</string>
-    <string name="custom_url_scheme">com.chronos.atlas</string>
-</resources>
