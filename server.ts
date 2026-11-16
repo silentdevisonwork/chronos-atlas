@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import http from 'node:http';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
@@ -8,7 +9,7 @@ import { GoogleGenAI, Type } from '@google/genai';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PORT = Number(process.env.PORT || 3000);
+const PORT = Number(process.env.PORT || 5000);
 const isProduction = process.env.NODE_ENV === 'production' || process.argv.includes('--prod');
 
 async function startServer() {
@@ -815,11 +816,15 @@ async function startServer() {
     }
   });
 
+  const httpServer = http.createServer(app);
+
   if (!isProduction) {
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
+        // Share the Express port so Vite does not open a second socket on 24678.
         hmr: process.env.DISABLE_HMR !== 'true',
+        ws: process.env.DISABLE_HMR === 'true' ? false : { server: httpServer },
       },
       appType: 'spa',
     });
@@ -832,8 +837,16 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Chronos Atlas server running on http://0.0.0.0:${PORT}`);
+  httpServer.on('error', (err: NodeJS.ErrnoException) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`Port ${PORT} is already in use.`);
+      process.exit(1);
+    }
+    throw err;
+  });
+
+  httpServer.listen(PORT, '0.0.0.0', () => {
+    console.log(`Chronos Atlas server running on http://localhost:${PORT}`);
   });
 }
 

@@ -25,7 +25,7 @@ Production:
 
 ```bash
 npm run build
-npm start          # serves dist/ + APIs on PORT (default 3000 as set in .env)
+npm start          # serves dist/ + APIs on PORT (5000 from .env)
 ```
 
 Copy `.env.example` to `.env` to change the port or add optional keys. Everything works without keys; `GEMINI_API_KEY` is only needed for the AI historian assistant.
