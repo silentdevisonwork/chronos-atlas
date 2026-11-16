@@ -12,7 +12,6 @@ import { CustomCursor } from './components/CustomCursor';
 import { OnboardingFlow } from './components/OnboardingFlow';
 import { SearchPalette } from './components/SearchPalette';
 import { TopBar } from './components/TopBar';
-import { MobileEnhancements } from './components/MobileEnhancements';
 import { ChronosHUD } from './components/liquid/ChronosHUD';
 import { LiquidBackground } from './components/liquid/LiquidBackground';
 import { SmoothScroll } from './components/liquid/SmoothScroll';
@@ -297,7 +296,6 @@ export default function App() {
         <OnboardingFlow />
         <SearchPalette />
         <AuthModal />
-        <MobileEnhancements />
         <Toaster
           position="bottom-center"
           theme={prefs.theme}
