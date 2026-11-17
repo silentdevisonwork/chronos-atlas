@@ -1,0 +1,19 @@
+{
+  "name": "Chronos Atlas",
+  "short_name": "Chronos",
+  "description": "3D History, Civilizations & Solar System Explorer",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./logo.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

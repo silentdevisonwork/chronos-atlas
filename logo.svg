@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </radialGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="50%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+
+  <!-- Outer Ring / Chronometer Dial -->
+  <circle cx="256" cy="256" r="190" fill="none" stroke="url(#goldGrad)" stroke-width="8" opacity="0.4" />
+  <circle cx="256" cy="256" r="170" fill="none" stroke="url(#goldGrad)" stroke-width="4" stroke-dasharray="12 8" />
+
+  <!-- Meridian Arcs -->
+  <ellipse cx="256" cy="256" rx="170" ry="70" fill="none" stroke="url(#cyanGrad)" stroke-width="5" transform="rotate(30 256 256)" filter="url(#glow)" />
+  <ellipse cx="256" cy="256" rx="170" ry="70" fill="none" stroke="url(#cyanGrad)" stroke-width="5" transform="rotate(-30 256 256)" filter="url(#glow)" />
+  <circle cx="256" cy="256" r="170" fill="none" stroke="url(#cyanGrad)" stroke-width="4" />
+
+  <!-- Central Globe / Core -->
+  <circle cx="256" cy="256" r="110" fill="url(#cyanGrad)" opacity="0.15" />
+  <circle cx="256" cy="256" r="110" fill="none" stroke="url(#goldGrad)" stroke-width="6" />
+
+  <!-- Hourglass / Time Core Symbol -->
+  <path d="M210 180 L302 180 L256 256 L302 332 L210 332 L256 256 Z" fill="url(#goldGrad)" filter="url(#glow)" opacity="0.9" />
+
+  <!-- Glowing Stars / Nodes -->
+  <circle cx="256" cy="116" r="8" fill="#fbbf24" filter="url(#glow)" />
+  <circle cx="256" cy="396" r="8" fill="#fbbf24" filter="url(#glow)" />
+  <circle cx="116" cy="256" r="8" fill="#06b6d4" filter="url(#glow)" />
+  <circle cx="396" cy="256" r="8" fill="#06b6d4" filter="url(#glow)" />
+</svg>
